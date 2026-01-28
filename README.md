@@ -322,15 +322,7 @@ Namespace: `opendatahub` or `redhat-ods-operator`
 **Purpose**: Serverless model inference platform with auto-scaling
 
 **Version**: Integrated with OpenShift AI 3.0+
-<details>
-  <summary>Key Features</summary>
-  <ul>
-<li>Serverless architecture**: Auto-scales to zero when idle</li>
-<li>Multi-framework support**: PyTorch, TensorFlow, SKLearn, XGBoost, vLLM, Hugging Face</li>
-<li>InferenceService**: Custom resource for deploying models</li>
-<li>Predictor/Transformer/Explainer**: Model pipeline components</li>
-</ul>
-</details>
+
 <details>
 <summary>Key Resources</summary>
 <ul>
@@ -346,30 +338,39 @@ Namespace: `opendatahub` or `redhat-ods-operator`
 <li>Istio Service Mesh (networking)</li>
 </ul>
 </details>
+
 ### 3. Red Hat OpenShift Serverless (Knative)
 
 **Purpose**: Provides serverless runtime for KServe
 
 **Operator**: `serverless-operator`
 
-**Components**:
-- **Knative Serving**: Serverless application runtime
-- **Knative Eventing** (optional): Event-driven architecture
+<details>
+<summary>Components</summary>
+<ul> 
+<li>Knative Serving**: Serverless application runtime</li>
+<li>Knative Eventing** (optional): Event-driven architecture</li>
+</ul>
+</details>
 
-**Key Resources**:
-- `KnativeServing`: CR to deploy Knative Serving
-- `Service`: Knative Service (auto-scaling workload)
-- `Route`: Traffic routing
-- `Revision`: Immutable snapshots of service configuration
+<details>
+  
+<summary>Key Resources</summary>
+<ul>
+<li>`KnativeServing`: CR to deploy Knative Serving</li>
+<li>`Service`: Knative Service (auto-scaling workload)</li>
+<li>`Route`: Traffic routing</li>
+<li>`Revision`: Immutable snapshots of service configuration</li>
+</ul>
+</details>
 
-**Namespaces**:
-- `knative-serving`: Control plane
-- Model namespaces: Application workloads
-
-**Features**:
-- Auto-scaling (scale to zero)
-- Traffic splitting (blue/green, canary)
-- Revision management
+<details>
+<summary>Namespaces</summary>
+<ul>
+<li>`knative-serving`: Control plane</li>
+<li>Model namespaces: Application workloads</li>
+</ul>
+</details>
 
 ### 4. Red Hat OpenShift Service Mesh (Istio)
 
@@ -377,25 +378,27 @@ Namespace: `opendatahub` or `redhat-ods-operator`
 
 **Operator**: `servicemeshoperator`
 
-**Components**:
-- **istiod**: Control plane for configuration and policies
-- **istio-ingressgateway**: Ingress traffic management
-- **istio-egressgateway**: Egress traffic management
+<details>
+<summary>Components</summary>
+ <ul> 
+<li>istiod: Control plane for configuration and policies</li>
+<li>istio-ingressgateway: Ingress traffic management</li>
+<li>istio-egressgateway: Egress traffic management</li>
+ </ul>
+</details>
 
-**Key Resources**:
-- `ServiceMeshControlPlane`: Main control plane CR
-- `ServiceMeshMemberRoll`: Namespaces in the mesh
-- `Gateway`: Istio gateway for ingress/egress
-- `VirtualService`: Traffic routing rules
-- `DestinationRule`: Load balancing policies
+<details>
+<summary>Key Resources</summary>
+  <ul> 
+<li>`ServiceMeshControlPlane`: Main control plane CR</li>
+<li>`ServiceMeshMemberRoll`: Namespaces in the mesh</li>
+<li>`Gateway`: Istio gateway for ingress/egress</li>
+<li>`VirtualService`: Traffic routing rules</li>
+<li>`DestinationRule`: Load balancing policies</li>
+  </ul>
+</details>
 
 **Namespace**: `istio-system`
-
-**Features**:
-- mTLS (mutual TLS) between services
-- Traffic management
-- Observability (metrics, traces)
-- Security policies
 
 ### 5. Red Hat Connectivity Link (RHCL) - Policy Engine
 
@@ -403,21 +406,23 @@ Namespace: `opendatahub` or `redhat-ods-operator`
 
 **Version**: 1.2+
 
-**Components**:
-- **Authorino**: Authentication and authorization service
-- **Limitador**: Rate limiting service
-- **Cert-manager**: Certificate management
+<details>
+<summary>Components</summary>
+    <ul> 
+<li>Authorino: Authentication and authorization service</li>
+<li>Limitador: Rate limiting service</li>
+<li>Cert-manager: Certificate management</li>
+    </ul>
+</details>
 
-**Key Resources**:
-- `AuthorizationPolicy`: Defines authentication rules
-- `RateLimitPolicy`: Defines rate limiting rules
-- `Certificate`: TLS certificate requests
-
-**Features**:
-- **Token validation**: Validates OpenShift and Service Account tokens
-- **RBAC integration**: Uses Kubernetes RBAC for authorization
-- **Rate limiting**: Per-tier usage limits
-- **Metrics**: Usage data sent to Prometheus
+<details>
+<summary>Key Resources</summary>
+  <ul>
+<li>`AuthorizationPolicy`: Defines authentication rules</li>
+<li>`RateLimitPolicy`: Defines rate limiting rules</li>
+<li>`Certificate`: TLS certificate requests</li>
+  </ul>
+</details>
 
 ### 6. Envoy Gateway
 
@@ -425,59 +430,48 @@ Namespace: `opendatahub` or `redhat-ods-operator`
 
 **Component**: `maas-default-gateway`
 
-**Key Resources**:
-- `Gateway`: Main gateway resource
-- `HTTPRoute`: HTTP routing rules
-- `GRPCRoute`: gRPC routing rules (optional)
-
-**Features**:
-- Path-based routing (`/maas-api/*`, `/v1/*`)
-- TLS termination
-- Request/response transformation
-- Policy attachment points
+<details>
+<summary>Key Resources</summary>
+  <ul>
+<li>`Gateway`: Main gateway resource</li>
+<li>`HTTPRoute`: HTTP routing rules</li>
+<li>`GRPCRoute`: gRPC routing rules (optional)</li>
+  </ul>
+</details>
 
 ### 7. MaaS API Service
 
 **Purpose**: Backend service for token management and user tier assignment
 
-**Language**: Go
+<details>
+<summary>Key Resources</summary>
+ <ul> 
+<li>`Deployment`: MaaS API application</li>
+<li>`Service`: Internal service endpoint</li>
+<li>`ConfigMap`: `tier-to-group-mapping` for tier configuration</li>
+<li>`ServiceAccount`: For API pod authentication</li>
+ </ul>
+</details>
 
-**Key Functions**:
-- **Token generation**: Creates service accounts and requests tokens
-- **Tier mapping**: Maps Kubernetes groups to service tiers
-- **User management**: Tracks token issuance and usage
-
-**Key Resources**:
-- `Deployment`: MaaS API application
-- `Service`: Internal service endpoint
-- `ConfigMap`: `tier-to-group-mapping` for tier configuration
-- `ServiceAccount`: For API pod authentication
-
-**Endpoints**:
-- `POST /maas-api/token`: Request new token
-- `GET /maas-api/tokens`: List user's tokens
+<details>
+<summary>Endpoints</summary>
+ <ul> 
+<li>`POST /maas-api/token`: Request new token</li>
+<li>`GET /maas-api/tokens`: List user's tokens</li>
+ </ul>
+</details>
 
 ### 8. Observability Stack
 
 **Purpose**: Monitoring and metrics collection
-
-**Components**:
-- **Prometheus**: Metrics collection and storage
-- **Grafana**: Dashboards and visualization
-- **Limitador metrics exporter**: Rate limit usage metrics
-
-**Metrics Collected**:
-- Request counts per tier
-- Rate limit usage
-- Model inference latency
-- Token generation events
-- Gateway traffic metrics
-
-**Dashboards**:
-- Tier usage overview
-- Model performance
-- Rate limit enforcement
-- Cost tracking
+<details>
+<summary>Components</summary>
+  <ul> 
+<li>Prometheus: Metrics collection and storage</li>
+<li>Grafana: Dashboards and visualization</li>
+<li>Limitador metrics exporter: Rate limit usage metrics</li>
+  </ul>
+</details>
 
 ---
 
@@ -485,40 +479,64 @@ Namespace: `opendatahub` or `redhat-ods-operator`
 
 ### Infrastructure Requirements
 
-1. **OpenShift Cluster**
-   - Version: **4.19.9 or higher**
-   - Cluster admin access
-   - Internet connectivity for pulling images
+<details> 
+<summary>OpenShift Cluster</summary>
+  <ul>
+   <li>Version: 4.19.9 or higher</li>
+   <li>Cluster admin access</li>
+   <li>Internet connectivity for pulling images</li>
+   </ul>
+</details>
 
-2. **Resource Requirements** (Recommended)
-   - **vCPUs**: 16+
-   - **RAM**: 32 GB+
-   - **Storage**: 100 GB+
-   - **Worker nodes**: 3+ (for HA)
+<details> 
+<summary>Resource Requirements (Recommended)</summary>
+  <ul>
+   <li>vCPUs: 16+</li>
+   <li>RAM: 32 GB+</li>
+   <li>Storage: 100 GB+</li>
+   <li>Worker nodes: 3+ (for HA)</li>
+  </ul>
+</details>
 
-3. **Storage**
-   - Dynamic storage provisioner configured
-   - Default storage class set
-   - Persistent volume support
+<details> 
+<summary>Storage</summary>
+  <ul>
+  <li>Dynamic storage provisioner configured</li>
+  <li>Default storage class set</li>
+  <li>Persistent volume support</li>
+</ul>
+</details>
 
-4. **Network Requirements**
-   - External route access (for gateway)
-   - Internal service-to-service communication
-   - Container image registry access
+<details> 
+<summary>Network Requirements</summary>
+  <ul> 
+   <li>External route access (for gateway)</li>
+   <li>Internal service-to-service communication</li>
+   <li>Container image registry access</li>
+  </ul>
+</details>
 
 ### Software Requirements
 
-1. **CLI Tools**
-   - `oc` (OpenShift CLI)
-   - `kubectl` (Kubernetes CLI)
-   - `kustomize` (v5.7.0+)
-   - `jq` (JSON processor)
-   - `gsed` (macOS only - GNU sed)
+<details>
+<summary>CLI Tools</summary>
+  <ul>
+   <li>`oc` (OpenShift CLI)</li>
+   <li>`kubectl` (Kubernetes CLI)</li>
+   <li>`kustomize` (v5.7.0+)</li>
+   <li>`jq` (JSON processor)</li>
+   <li>`gsed` (macOS only - GNU sed)</li>
+  </ul>
+</details>
 
-2. **Permissions**
-   - Cluster admin role
-   - Ability to create projects/namespaces
-   - Ability to install operators via OperatorHub
+<details>
+<summary>Permissions</summary>
+  <ul>
+   <li>Cluster admin role</li>
+   <li>Ability to create projects/namespaces</li>
+   <li>Ability to install operators via OperatorHub</li>
+  </ul>
+</details>
 
 ### Pre-Installation Checks
 
