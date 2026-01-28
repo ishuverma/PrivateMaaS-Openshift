@@ -281,6 +281,7 @@ MaaS is under active development and provided as a **developer preview**. It is 
 
 ---
 
+
 ## Components
 
 ### 1. OpenShift AI / Open Data Hub (Core Platform)
@@ -289,40 +290,62 @@ MaaS is under active development and provided as a **developer preview**. It is 
 
 **Operator**: `opendatahub-operator` or `rhods-operator`
 
-**Key Resources**:
-- `DataScienceCluster`: Main CR that manages all components
-- `DataScienceClusterInitialization`: Initialization configuration
+<details>
+ 
+<summary>Key Resources</summary>
+ <ul>
+ <li>
+`DataScienceCluster`: Main CR that manages all components 
+ </li>
+<li>
+`DataScienceClusterInitialization`: Initialization configuration
+</li>
+ </ul>
+</details>
 
-**Managed Components**:
-- KServe (model serving)
-- Model Registry
-- Data Science Pipelines
-- Workbenches
-- Model Mesh (optional)
-
-**Namespace**: `opendatahub` or `redhat-ods-operator`
+<details>
+<summary>Managed Components</summary>
+<ul>
+<li>KServe (model serving)</li>
+<li>Model Registry</li>
+<li>Data Science Pipelines</li>
+<li>Workbenches</li>
+<li>Model Mesh (optional)</li>
+</ul>
+<ul>
+Namespace: `opendatahub` or `redhat-ods-operator`
+</ul>
+</details>
 
 ### 2. KServe (Model Serving)
 
 **Purpose**: Serverless model inference platform with auto-scaling
 
 **Version**: Integrated with OpenShift AI 3.0+
-
-**Key Features**:
-- **Serverless architecture**: Auto-scales to zero when idle
-- **Multi-framework support**: PyTorch, TensorFlow, SKLearn, XGBoost, vLLM, Hugging Face
-- **InferenceService**: Custom resource for deploying models
-- **Predictor/Transformer/Explainer**: Model pipeline components
-
-**Key Resources**:
-- `InferenceService`: Defines model deployment
-- `ServingRuntime`: Defines model server configuration
-- `ClusterServingRuntime`: Cluster-wide runtime templates
-
-**Dependencies**:
-- Knative Serving (serverless runtime)
-- Istio Service Mesh (networking)
-
+<details>
+  <summary>Key Features</summary>
+  <ul>
+<li>Serverless architecture**: Auto-scales to zero when idle</li>
+<li>Multi-framework support**: PyTorch, TensorFlow, SKLearn, XGBoost, vLLM, Hugging Face</li>
+<li>InferenceService**: Custom resource for deploying models</li>
+<li>Predictor/Transformer/Explainer**: Model pipeline components</li>
+</ul>
+</details>
+<details>
+<summary>Key Resources</summary>
+<ul>
+<li> `InferenceService`: Defines model deployment</li>
+<li>`ServingRuntime`: Defines model server configuration</li>
+<li>`ClusterServingRuntime`: Cluster-wide runtime templates</li>
+  </ul>
+</details>
+<details>
+<summary>Dependencies</summary>
+   <ul> 
+<li> Knative Serving (serverless runtime)</li>
+<li>Istio Service Mesh (networking)</li>
+</ul>
+</details>
 ### 3. Red Hat OpenShift Serverless (Knative)
 
 **Purpose**: Provides serverless runtime for KServe
@@ -782,14 +805,6 @@ export MAAS_REF="v0.0.2"
 # Run deployment script
 ./scripts/deploy-rhoai-stable.sh
 ```
-
-
-    Data Ingestion
-    
-        Multimodal content extraction - Documents with with text, tables, charts, infographics, and audio. For the full list of supported file types, see [NeMo Retriever Extraction Overview](https://docs.nvidia.com/nemo/retriever/latest/extraction/overview/).
-        <li>Custom metadata support</li>
-    
-
 
 <details>
 <summary>What the script does</summary>
