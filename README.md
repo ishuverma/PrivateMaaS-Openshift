@@ -783,15 +783,27 @@ export MAAS_REF="v0.0.2"
 ./scripts/deploy-rhoai-stable.sh
 ```
 
-**What the script does**:
-1. Installs **Cert-manager operator**
-2. Installs **LWS (Limitador) operator**
-3. Installs **Red Hat Connectivity Link** operator
-4. Creates `maas-default-gateway` Gateway resource
-5. Creates HTTPRoutes for `/maas-api/*` and `/v1/*`
-6. Deploys **MaaS API** service
-7. Creates authentication and rate limiting policies
-8. Configures tier-to-group mappings
+
+    Data Ingestion
+    
+        Multimodal content extraction - Documents with with text, tables, charts, infographics, and audio. For the full list of supported file types, see [NeMo Retriever Extraction Overview](https://docs.nvidia.com/nemo/retriever/latest/extraction/overview/).
+        <li>Custom metadata support</li>
+    
+
+
+<details>
+<summary>What the script does</summary>
+  <ul>
+  <li>Installs **Cert-manager operator</li>
+  <li>Installs **LWS (Limitador) operator**</li>
+  <li>Installs **Red Hat Connectivity Link** operator</li>
+  <li>Creates `maas-default-gateway` Gateway resource</li>
+  <li>Creates HTTPRoutes for `/maas-api/*` and `/v1/*`</li>
+  <li>Deploys **MaaS API** service</li>
+  <li>Creates authentication and rate limiting policies</li>
+  <li>Configures tier-to-group mappings</li>
+  </ul>
+</details>
 
 #### Step 5.3: Monitor Deployment
 
@@ -1037,225 +1049,14 @@ HTTP/1.1 429 Too Many Requests
 
 ---
 
-## Post-Deployment Configuration
+## [Post-Deployment Configuration](https://github.com/ishuverma/PrivateMaaS-Openshift/blob/main/PostDeployment.md)
 
-### Configure Tier Mappings
-
-#### 1. View Current Tier Configuration
-
-```bash
-oc get configmap tier-to-group-mapping -n maas -o yaml
-```
-
-#### 2. Edit Tier Mappings
-
-```bash
-oc edit configmap tier-to-group-mapping -n maas
-```
-
-**Example configuration**:
-```yaml
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: tier-to-group-mapping
-  namespace: maas
-data:
-  mapping.yaml: |
-    tiers:
-      free:
-        groups:
-          - "system:authenticated"
-        rateLimit:
-          requestsPerMinute: 10
-      premium:
-        groups:
-          - "premium-users"
-        rateLimit:
-          requestsPerMinute: 100
-      enterprise:
-        groups:
-          - "enterprise-users"
-        rateLimit:
-          requestsPerMinute: 1000
-```
-
-#### 3. Restart MaaS API
-
-```bash
-oc rollout restart deployment/maas-api -n maas
-```
-
-### Add User Groups
-
-```bash
-# Add user to premium group
-oc adm groups new premium-users
-oc adm groups add-users premium-users user1
-
-# Add user to enterprise group
-oc adm groups new enterprise-users
-oc adm groups add-users enterprise-users admin-user
-```
-
-### Deploy Production Models
-
-#### 1. Create Model Namespace
-
-```bash
-oc new-project production-models
-```
-
-#### 2. Add Namespace to Service Mesh
-
-```bash
-oc label namespace production-models istio-injection=enabled
-```
-
-#### 3. Create ServingRuntime
-
-```yaml
-apiVersion: serving.kserve.io/v1alpha1
-kind: ServingRuntime
-metadata:
-  name: vllm-runtime
-  namespace: production-models
-spec:
-  supportedModelFormats:
-    - name: pytorch
-      version: "1"
-      autoSelect: true
-  containers:
-    - name: kserve-container
-      image: quay.io/opendatahub/vllm:latest
-      args:
-        - --model
-        - /mnt/models
-        - --tensor-parallel-size
-        - "1"
-      resources:
-        requests:
-          cpu: "2"
-          memory: 8Gi
-        limits:
-          cpu: "4"
-          memory: 16Gi
-```
-
-#### 4. Create InferenceService
-
-```yaml
-apiVersion: serving.kserve.io/v1beta1
-kind: InferenceService
-metadata:
-  name: granite-7b
-  namespace: production-models
-spec:
-  predictor:
-    model:
-      modelFormat:
-        name: pytorch
-      runtime: vllm-runtime
-      storage:
-        path: s3://models/granite-7b
-        key: aws-secret
-```
-
-#### 5. Configure RBAC for Model Access
-
-```bash
-# Allow premium tier to access model
-oc create role model-access --verb=get --resource=inferenceservices -n production-models
-oc create rolebinding premium-model-access \
-  --role=model-access \
-  --serviceaccount=maas:premium-sa-* \
-  -n production-models
-```
-
-### Configure Monitoring
-
-#### 1. Access Grafana
-
-```bash
-# Get Grafana route
-oc get route grafana -n openshift-monitoring
-
-# Login with OpenShift credentials
-```
-
-#### 2. Import MaaS Dashboards
-
-The deployment includes pre-built dashboards for:
-- Tier usage overview
-- Rate limit metrics
-- Model performance
-- Gateway traffic
-
-Import from: `deployment/observability/dashboards/`
-
-### Configure TLS Certificates
-
-#### Option A: Self-Signed (Default)
-
-Already configured during deployment.
-
-#### Option B: Custom Certificate
-
-```bash
-# Create TLS secret
-oc create secret tls custom-gateway-cert \
-  --cert=path/to/cert.crt \
-  --key=path/to/cert.key \
-  -n maas
-
-# Update Gateway to use custom cert
-oc edit gateway maas-default-gateway -n maas
-```
-
-Update certificate reference:
-```yaml
-spec:
-  listeners:
-    - name: https
-      protocol: HTTPS
-      port: 443
-      tls:
-        mode: Terminate
-        certificateRefs:
-          - name: custom-gateway-cert
-```
-
----
 
 ## Troubleshooting
 
 ### [Common Issues](https://github.com/ishuverma/PrivateMaaS-Openshift/blob/main/CommonIssues.md)
 ### [Debugging Commands](https://github.com/ishuverma/PrivateMaaS-Openshift/blob/main/Debugging.md)
-
-
-
-### Log Collection
-
-```bash
-# Collect logs from all MaaS components
-mkdir -p maas-logs
-
-# MaaS API
-oc logs -n maas deployment/maas-api > maas-logs/maas-api.log
-
-# Authorino
-oc logs -n authorino deployment/authorino > maas-logs/authorino.log
-
-# Limitador
-oc logs -n limitador-system deployment/limitador > maas-logs/limitador.log
-
-# Gateway (Envoy)
-oc logs -n maas deployment/maas-default-gateway > maas-logs/gateway.log
-
-# KServe controller
-oc logs -n opendatahub deployment/kserve-controller-manager > maas-logs/kserve.log
-```
-
+### [Log Collection](https://github.com/ishuverma/PrivateMaaS-Openshift/blob/main/LogCollection.md)
 ---
 
 ## References
