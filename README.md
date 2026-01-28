@@ -1,4 +1,4 @@
-# Model as a Service (MaaS) - Deployment Guide for Fresh OpenShift Cluster
+# Solution Guide for Model as a Service (MaaS)
 
 ## Table of Contents
 1. [Overview](#overview)
