@@ -564,60 +564,7 @@ jq --version
 
 ## Deployment Workflow
 
-### Overview
-
-The deployment follows this sequence:
-
-```
-1. Install Base Operators (Manual via OperatorHub)
-   └─> OpenShift Serverless
-   └─> OpenShift Service Mesh
-   └─> OpenShift AI / Open Data Hub
-
-2. Configure Service Mesh Control Plane
-   └─> Deploy Istio components
-   └─> Verify istiod, ingress/egress gateways
-
-3. Configure Knative Serving
-   └─> Deploy Knative serving components
-   └─> Configure integration with Istio
-
-4. Enable KServe
-   └─> Update DataScienceCluster CR
-   └─> Deploy KServe controller
-
-5. Deploy MaaS Platform (Automated Script)
-   └─> Install RHCL (Cert-manager, Authorino, Limitador)
-   └─> Create Gateway and HTTPRoutes
-   └─> Deploy MaaS API service
-   └─> Configure policies (AuthZ, RateLimit)
-   └─> Deploy sample models (optional)
-
-6. Verify Deployment
-   └─> Check all pods running
-   └─> Test token generation
-   └─> Test model inference
-
-7. Configure Tiers and Models
-   └─> Customize tier mappings
-   └─> Deploy production models
-   └─> Set up monitoring dashboards
-```
-
-### Deployment Timeline
-
-| Stage | Component | Duration | Dependencies |
-|-------|-----------|----------|--------------|
-| 1 | Operator Installation | 5-10 min | None |
-| 2 | Service Mesh Setup | 10-15 min | Serverless Operator |
-| 3 | Knative Serving | 5-10 min | Service Mesh |
-| 4 | KServe Enable | 5 min | Knative, Service Mesh |
-| 5 | MaaS Deployment | 10-20 min | All above |
-| 6 | Verification | 5-10 min | MaaS deployed |
-| 7 | Configuration | 10-30 min | User preferences |
-
-**Total**: 50-100 minutes for complete deployment
-
+![Deployment Workflow](./images/MaaS-flow.png)
 ---
 
 ## Step-by-Step Deployment
