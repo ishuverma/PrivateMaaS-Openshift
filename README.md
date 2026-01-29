@@ -17,28 +17,27 @@
 
 ## Overview
 
-This guide provides complete instructions for deploying **Model as a Service (MaaS)** on a fresh OpenShift cluster. MaaS is a cloud-native platform built on Open Data Hub that provides policy-based access control, rate limiting, and tier-based subscriptions for AI model serving.
+**Models as a Service (MaaS)** enables enterprises to offer AI services that could be consumed by the entire company. This guide provides instructions for deploying MaaS on OpenShift.
 
-### Key Capabilities
-
-- **Self-Service Access Control**: Users can request and manage their own API tokens
-- **Tier-Based Subscriptions**: Different service levels (free, premium, enterprise) with distinct quotas
-- **Rate Limiting**: Usage limits enforced per tier to manage costs
-- **Centralized Gateway**: Single entry point for all model inference requests
-- **Multi-Model Support**: Deploy and serve multiple LLM models (Qwen, Granite, Llama, etc.)
-- **Cost Management**: Monitor and control inference costs through observability dashboards
-
----
-
-## What is Model as a Service
-
-**Model as a Service (MaaS)** extends Open Data Hub's capabilities by adding a management layer for self-service access control, rate limiting, and tier-based subscriptions. It enables organizations to:
-
+## Benefits
 - **Deliver AI models as shared resources** that users can access on demand
 - **Provide standardized API endpoints** compatible with OpenAI API format
 - **Share and access private AI models** at scale across the organization
 - **Enforce governance policies** in real-time during inference requests
 - **Monitor usage and costs** through comprehensive observability
+
+<details>
+<summary>Key Capabilities</summary>
+<ul>
+<li>Self-Service Access Control: Users can request and manage their own API tokens</li>
+<li>Tier-Based Subscriptions: Different service levels (free, premium, enterprise) with distinct quotas</li>
+<li>Rate Limiting: Usage limits enforced per tier to manage costs</li>
+<li>Centralized Gateway: Single entry point for all model inference requests</li>
+<li>Multi-Model Support: Deploy and serve multiple LLM models (Qwen, Granite, Llama, etc.)</li>
+<li>Cost Management: Monitor and control inference costs through observability dashboards</li>
+</ul>
+</details>
+---
 
 ### Status
 
@@ -59,15 +58,10 @@ MaaS is under active development and provided as a **developer preview**. It is 
 **Operator**: `opendatahub-operator` or `rhods-operator`
 
 <details>
- 
 <summary>Key Resources</summary>
  <ul>
- <li>
-`DataScienceCluster`: Main CR that manages all components 
- </li>
-<li>
-`DataScienceClusterInitialization`: Initialization configuration
-</li>
+ <li>`DataScienceCluster`: Main CR that manages all components </li>
+<li>`DataScienceClusterInitialization`: Initialization configuration</li>
  </ul>
 </details>
 
@@ -625,177 +619,7 @@ oc get inferenceservice <model-name> -n <namespace> -o jsonpath='{.status.condit
 
 ---
 
-## Verification
-
-### Verify All Components
-
-#### 1. Check Operators
-
-```bash
-# All operators should show Succeeded
-oc get csv -A | grep -E "serverless|servicemesh|opendatahub|rhods"
-```
-
-#### 2. Check Core Services
-
-```bash
-# Istio
-oc get pods -n istio-system
-# Expected: istiod, ingress/egress gateways (all Running)
-
-# Knative
-oc get pods -n knative-serving
-# Expected: activator, autoscaler, controller, net-istio-* (all Running)
-
-# KServe
-oc get pods -n opendatahub | grep kserve
-# OR
-oc get pods -n redhat-ods-operator | grep kserve
-# Expected: kserve-controller-manager (Running)
-```
-
-#### 3. Check MaaS Platform
-
-```bash
-# MaaS components
-oc get pods -n maas
-oc get pods -n limitador-system
-oc get pods -n authorino
-oc get pods -n cert-manager
-
-# Gateway
-oc get gateway maas-default-gateway -n maas
-
-# HTTPRoutes
-oc get httproute -n maas
-
-# Policies
-oc get authorizationpolicy -A
-oc get ratelimitpolicy -A
-```
-
-#### 4. Check Gateway Route
-
-```bash
-# Get external URL
-oc get route -n maas
-
-# Should show route like:
-# maas-default-gateway-<hash>.apps.<cluster-domain>
-```
-
-### Test Token Generation
-
-#### 1. Login to OpenShift
-
-```bash
-oc login --server=https://api.<cluster-domain>:6443 --username=<user>
-```
-
-#### 2. Get OpenShift Token
-
-```bash
-TOKEN=$(oc whoami -t)
-echo $TOKEN
-```
-
-#### 3. Request MaaS Token
-
-```bash
-# Get gateway URL
-GATEWAY_URL=$(oc get route -n maas -o jsonpath='{.items[0].spec.host}')
-
-# Request token
-curl -X POST https://${GATEWAY_URL}/maas-api/token \
-  -H "Authorization: Bearer ${TOKEN}" \
-  -H "X-Forwarded-Access-Token: ${TOKEN}" \
-  -k | jq
-```
-
-**Expected response**:
-```json
-{
-  "token": "eyJhbGciOiJSUzI1NiIsImtpZCI6IjQ4...",
-  "tier": "free",
-  "expiresAt": "2026-01-28T00:00:00Z"
-}
-```
-
-### Test Model Inference
-
-#### 1. Use MaaS Token
-
-```bash
-# Save the token from previous step
-MAAS_TOKEN="<token-from-response>"
-
-# Get gateway URL
-GATEWAY_URL=$(oc get route -n maas -o jsonpath='{.items[0].spec.host}')
-```
-
-#### 2. Send Inference Request
-
-```bash
-curl -X POST https://${GATEWAY_URL}/v1/chat/completions \
-  -H "Authorization: Bearer ${MAAS_TOKEN}" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "model": "qwen3",
-    "messages": [
-      {
-        "role": "user",
-        "content": "Hello, how are you?"
-      }
-    ]
-  }' \
-  -k | jq
-```
-
-**Expected response**:
-```json
-{
-  "id": "chatcmpl-...",
-  "object": "chat.completion",
-  "created": 1706400000,
-  "model": "qwen3",
-  "choices": [
-    {
-      "index": 0,
-      "message": {
-        "role": "assistant",
-        "content": "Hello! I'm doing well, thank you for asking..."
-      },
-      "finish_reason": "stop"
-    }
-  ],
-  "usage": {
-    "prompt_tokens": 10,
-    "completion_tokens": 25,
-    "total_tokens": 35
-  }
-}
-```
-
-### Test Rate Limiting
-
-```bash
-# Send multiple requests rapidly to trigger rate limit
-for i in {1..15}; do
-  curl -X POST https://${GATEWAY_URL}/v1/chat/completions \
-    -H "Authorization: Bearer ${MAAS_TOKEN}" \
-    -H "Content-Type: application/json" \
-    -d '{"model":"qwen3","messages":[{"role":"user","content":"Test"}]}' \
-    -k
-  echo ""
-done
-```
-
-**Expected**: After 10 requests (free tier limit), you should receive:
-```
-HTTP/1.1 429 Too Many Requests
-```
-
----
+## [Verify Deployment](https://github.com/ishuverma/PrivateMaaS-Openshift/blob/main/Verification.md)
 
 ## [Post-Deployment Configuration](https://github.com/ishuverma/PrivateMaaS-Openshift/blob/main/PostDeployment.md)
 
@@ -807,53 +631,9 @@ HTTP/1.1 429 Too Many Requests
 ### [Log Collection](https://github.com/ishuverma/PrivateMaaS-Openshift/blob/main/LogCollection.md)
 ---
 
-## References
+## [References](https://github.com/ishuverma/PrivateMaaS-Openshift/blob/main/References.md)
 
-### Official Documentation
 
-- **OpenDataHub MaaS Project**: https://github.com/opendatahub-io/models-as-a-service
-  - Complete source code and deployment manifests
-
-- **OpenDataHub Documentation**: https://opendatahub.io/docs
-  - Getting Started: https://opendatahub.io/docs/getting-started-with-open-data-hub/
-  - Deploying Models: https://opendatahub.io/docs/deploying-models/
-  - Model Serving Platform: https://opendatahub.io/docs/configuring-your-model-serving-platform/
-  - Architecture: https://opendatahub.io/docs/architecture/
-
-- **Red Hat Developer**:
-  - Models-as-a-Service in OpenShift AI: https://developers.redhat.com/articles/2025/11/25/introducing-models-service-openshift-ai
-  - Installing KServe with ODH: https://developers.redhat.com/articles/2024/06/27/how-install-kserve-using-open-data-hub
-
-### Component Documentation
-
-- **KServe**: https://kserve.github.io/website/
-- **Knative**: https://knative.dev/docs/
-- **Istio**: https://istio.io/latest/docs/
-- **Kuadrant**: https://docs.kuadrant.io/
-- **Authorino**: https://docs.kuadrant.io/authorino/
-- **Limitador**: https://docs.kuadrant.io/limitador/
-
-### OpenShift Documentation
-
-- **OpenShift Serverless**: https://docs.openshift.com/serverless/
-- **OpenShift Service Mesh**: https://docs.openshift.com/service-mesh/
-- **OpenShift AI**: https://access.redhat.com/documentation/en-us/red_hat_openshift_ai/
-
-### GitHub Repositories
-
-- **models-as-a-service**: https://github.com/opendatahub-io/models-as-a-service
-- **opendatahub-operator**: https://github.com/opendatahub-io/opendatahub-operator
-- **kserve**: https://github.com/opendatahub-io/kserve
-
-### Version Information
-
-- **OpenShift**: 4.19.9+
-- **OpenShift AI / ODH**: 3.0+
-- **Red Hat Connectivity Link**: 1.2+
-- **KServe**: Integrated with OpenShift AI
-- **MaaS Platform**: v0.0.2 (as of this guide)
-
----
 
 ### Next Steps
 After deployment:
