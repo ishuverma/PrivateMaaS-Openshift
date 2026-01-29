@@ -37,9 +37,8 @@
 <li>Cost Management: Monitor and control inference costs through observability dashboards</li>
 </ul>
 </details>
----
 
-### Status
+### Note
 
 MaaS is under active development and provided as a **developer preview**. It is not yet recommended for production workloads.
 
