@@ -2,16 +2,13 @@
 
 ## Table of Contents
 1. [Overview](#overview)
-2. [What is Model as a Service](#what-is-model-as-a-service)
-3. [Architecture](#architecture)
-4. [Components](#components)
-5. [Prerequisites](#prerequisites)
-6. [Deployment Workflow](#deployment-workflow)
-7. [Step-by-Step Deployment](#step-by-step-deployment)
-8. [Verify Deployment](#verification)
-9. [Post-Deployment Configuration](#post-deployment-configuration)
-10. [Troubleshooting](#troubleshooting)
-11. [References](#references)
+2. [Architecture](#architecture)
+3. [Components](#components)
+4. [Prerequisites](#prerequisites)
+5. [Step-by-Step Deployment](#step-by-step-deployment)
+6. [Verify Deployment](#verify-deployment)
+7. [Post-Deployment Configuration](#post-deployment-configuration)
+8. [Troubleshooting](#troubleshooting)
 
 ---
 
