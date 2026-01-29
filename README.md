@@ -8,7 +8,7 @@
 5. [Prerequisites](#prerequisites)
 6. [Deployment Workflow](#deployment-workflow)
 7. [Step-by-Step Deployment](#step-by-step-deployment)
-8. [Verification](#verification)
+8. [Verify Deployment](#verification)
 9. [Post-Deployment Configuration](#post-deployment-configuration)
 10. [Troubleshooting](#troubleshooting)
 11. [References](#references)
